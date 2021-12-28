@@ -188,25 +188,30 @@ export function generate(
 		if (!scriptSetup && !!scriptRanges?.privateClassMembers && !!scriptRanges.privateClassMembers.length && !!script ) {
 			for (const privateClassMember of scriptRanges.privateClassMembers) { 
 				codeGen.addCode(
-					script.content.substring(privateClassMember.start, privateClassMember.end) + '\n',
+					getPrivateMemberText(privateClassMember),
 					privateClassMember,
 					SourceMaps.Mode.Offset,
 					{
 						vueTag: 'script',
 						capabilities: {
-							basic: lsType === 'script',
 							references: true,
-							definitions: lsType === 'script',
-							diagnostic: lsType === 'script',
 							rename: true,
-							completion: lsType === 'script',
-							semanticTokens: lsType === 'script',
 						},
 					}
 				);
 			}
 		}
 		codeGen.addText(`}\n`);
+	}
+	function getPrivateMemberText(privateClassMember: TextRange & {
+		isGetter: boolean;
+		isSetter: boolean;
+	}) {
+		if (!script) {
+			return '';
+		}
+		const memberExpression = script.content.substring(privateClassMember.start, privateClassMember.end);
+		return privateClassMember.isGetter ? `get ${memberExpression}\n` : privateClassMember.isSetter ? `set ${memberExpression}\n` : memberExpression + '\n';
 	}
 	function writeScriptSetup() {
 		if (!scriptSetup)
