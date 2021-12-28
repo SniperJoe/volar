@@ -24,7 +24,7 @@ export function useSfcEntryForTemplateLs(
 		content += '// @ts-nocheck\n';
 		content += `import * as __VLS_types from './__VLS_types';\n`;
 		if (script.value || scriptSetup.value) {
-			content += `import { __VLS_options as __VLS_options_ts } from './${vueFileName}.${tsScriptFileName}';\n`;
+			content += `import { __VLS_options as __VLS_options_ts, __VLS_privateMembers } from './${vueFileName}.${tsScriptFileName}';\n`;
 			content += `import { __VLS_options, __VLS_name } from './${vueFileName}.__VLS_script';\n`;
 			content += `export { __VLS_options, __VLS_name } from './${vueFileName}.__VLS_script';\n`;
 			content += `export * from './${vueFileName}.__VLS_script';\n`;
@@ -38,7 +38,7 @@ export function useSfcEntryForTemplateLs(
 			content += `var __VLS_options_ts = {};\n`;
 			content += `var __VLS_component_ts = (await import('${getVueLibraryName(isVue2)}')).defineComponent({});\n`;
 		}
-		content += `declare var __VLS_ctx: __VLS_types.ComponentContext<typeof __VLS_component_ts>;\n`;
+		content += `declare var __VLS_ctx: __VLS_types.ComponentContext<typeof __VLS_component_ts, typeof __VLS_privateMembers>;\n`;
 		content += `declare var __VLS_ComponentsWrap: typeof __VLS_options & { components: { } };\n`;
 		content += `declare var __VLS_Components: /*NonNullable<typeof __VLS_component_ts.components> & */typeof __VLS_ComponentsWrap.components & __VLS_types.GlobalComponents & __VLS_types.PickComponents<typeof __VLS_ctx> & __VLS_types.SelfComponent<typeof __VLS_name, typeof __VLS_component>;\n`;
 		content += `__VLS_ctx.${SearchTexts.Context};\n`;

@@ -14,6 +14,7 @@ export function parseScriptRanges(ts: typeof import('typescript/lib/tsserverlibr
 	}) | undefined;
 
 	const bindings = hasScriptSetup ? parseBindingRanges(ts, ast, false) : [];
+	const privateClassMembers: TextRange[] = [];
 
 	ast.forEachChild(node => {
 		if (ts.isExportAssignment(node)) {
@@ -73,12 +74,21 @@ export function parseScriptRanges(ts: typeof import('typescript/lib/tsserverlibr
 					}
 				}
 			});
+			if (node.members && node.members.length) {
+				const sourceFile = ast.getSourceFile();
+				node.members.forEach(member => {
+					if ((ts.getCombinedModifierFlags(member) & ts.ModifierFlags.Private) && member.name) {
+						privateClassMembers.push({ start: member.name.getStart(sourceFile), end: member.getEnd() });
+					}
+				})
+			}
 		}
 	});
 
 	return {
 		exportDefault,
 		bindings,
+		privateClassMembers
 	};
 
 	function _getStartEnd(node: ts.Node) {

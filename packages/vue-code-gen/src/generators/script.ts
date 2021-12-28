@@ -84,6 +84,7 @@ export function generate(
 		writeConstNameOption();
 		writeExportTypes();
 	}
+	writePrivateMembers();
 
 	if (lsType === 'script' && scriptSetup) {
 		// for code action edits
@@ -180,6 +181,32 @@ export function generate(
 				);
 			}
 		}
+	}
+	function writePrivateMembers() {
+		codeGen.addText(`\n`);
+		codeGen.addText(`export class __VLS_privateMembers {\n`);
+		if (!scriptSetup && !!scriptRanges?.privateClassMembers && !!scriptRanges.privateClassMembers.length && !!script ) {
+			for (const privateClassMember of scriptRanges.privateClassMembers) { 
+				codeGen.addCode(
+					script.content.substring(privateClassMember.start, privateClassMember.end) + '\n',
+					privateClassMember,
+					SourceMaps.Mode.Offset,
+					{
+						vueTag: 'script',
+						capabilities: {
+							basic: lsType === 'script',
+							references: true,
+							definitions: lsType === 'script',
+							diagnostic: lsType === 'script',
+							rename: true,
+							completion: lsType === 'script',
+							semanticTokens: lsType === 'script',
+						},
+					}
+				);
+			}
+		}
+		codeGen.addText(`}\n`);
 	}
 	function writeScriptSetup() {
 		if (!scriptSetup)

@@ -76,11 +76,11 @@ export function useSfcTemplateScript(
 		const codeGen = createCodeGen<SourceMaps.TsMappingData>();
 
 		codeGen.addText(`import * as __VLS_types from './__VLS_types';\n`);
-		codeGen.addText(`import { __VLS_options, __VLS_name, __VLS_component } from './${vueFileName}';\n`);
+		codeGen.addText(`import { __VLS_options, __VLS_name, __VLS_component, __VLS_privateMembers } from './${vueFileName}';\n`);
 
 		writeImportTypes();
 
-		codeGen.addText(`declare var __VLS_ctxRaw: InstanceType<typeof __VLS_component>;\n`);
+		codeGen.addText(`declare var __VLS_ctxRaw: __VLS_types.ClassComponentContext<typeof __VLS_component, typeof __VLS_privateMembers>;\n`);
 		codeGen.addText(`declare var __VLS_ctx: __VLS_types.ExtractRawComponents<typeof __VLS_ctxRaw>;\n`);
 		codeGen.addText(`declare var __VLS_vmUnwrap: typeof __VLS_options & { components: { } };\n`);
 
