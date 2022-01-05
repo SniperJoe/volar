@@ -1,4 +1,4 @@
-import type * as vscode from 'vscode-languageserver';
+import type * as vscode from 'vscode-languageserver-protocol';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import * as shared from '@volar/shared';
 import { createSourceFile, SourceFile } from './sourceFile';
@@ -11,7 +11,8 @@ import * as tsProgramApis from './tsProgramApis';
 // vue services
 import * as completions from './services/completion';
 import * as completionResolve from './services/completionResolve';
-import * as autoClose from './services/autoClose';
+import * as autoCreateQuotes from './services/autoCreateQuotes';
+import * as autoClosingTags from './services/autoClosingTags';
 import * as refAutoClose from './services/refAutoClose';
 import * as hover from './services/hover';
 import * as diagnostics from './services/diagnostics';
@@ -30,9 +31,8 @@ import * as signatureHelp from './services/signatureHelp';
 import * as colorPresentations from './services/colorPresentation';
 import * as semanticTokens from './services/semanticTokens';
 import * as foldingRanges from './services/foldingRanges';
-import * as codeLens from './services/codeLens';
-import * as codeLensResolve from './services/codeLensResolve';
-import * as executeCommand from './services/executeCommand';
+import * as codeLens from './services/referencesCodeLens';
+import * as codeLensResolve from './services/referencesCodeLensResolve';
 import * as callHierarchy from './services/callHierarchy';
 import * as linkedEditingRanges from './services/linkedEditingRange';
 import * as tagNameCase from './services/tagNameCase';
@@ -48,12 +48,11 @@ import * as ts2 from 'vscode-typescript-languageservice';
 import * as pug from 'vscode-pug-languageservice';
 import { createSourceFiles } from './sourceFiles';
 
-export type DocumentLanguageService = ReturnType<typeof getDocumentLanguageService>;
-export type LanguageService = ReturnType<typeof createLanguageService>;
+export interface DocumentLanguageService extends ReturnType<typeof getDocumentLanguageService> { }
+export interface LanguageService extends ReturnType<typeof createLanguageService> { }
 export type LanguageServiceHost = ts2.LanguageServiceHost & {
 	getVueCompilationSettings?(): VueCompilerOptions,
 	getVueProjectVersion?(): string;
-	createTsLanguageService?(host: ts.LanguageServiceHost): ts.LanguageService,
 	getEmmetConfig?(syntax: string): Promise<emmet.VSCodeEmmetConfig>,
 	schemaRequestService?: json.SchemaRequestService,
 	getCssLanguageSettings?(document: TextDocument): Promise<css.LanguageSettings>,
@@ -88,7 +87,8 @@ export function getDocumentLanguageService(
 		doFormatting: formatting.register(context, getPreferences, getFormatOptions, formatters),
 		getFoldingRanges: foldingRanges.register(context, getPreferences, getFormatOptions),
 		getSelectionRanges: selectionRanges.register(context, getPreferences, getFormatOptions),
-		doTagComplete: autoClose.register(context),
+		doQuoteComplete: autoCreateQuotes.register(context),
+		doTagComplete: autoClosingTags.register(context),
 		findLinkedEditingRanges: linkedEditingRanges.register(context),
 		findDocumentSymbols: documentSymbol.register(context, getPreferences, getFormatOptions),
 		findDocumentColors: documentColor.register(context),
@@ -155,8 +155,8 @@ export function createLanguageService(
 
 	const templateTsHost = createTsLsHost('template');
 	const scriptTsHost = createTsLsHost('script');
-	const templateTsLsRaw = vueHost.createTsLanguageService ? vueHost.createTsLanguageService(templateTsHost) : ts.createLanguageService(templateTsHost);
-	const scriptTsLsRaw = vueHost.createTsLanguageService ? vueHost.createTsLanguageService(scriptTsHost) : ts.createLanguageService(scriptTsHost);
+	const templateTsLsRaw = ts.createLanguageService(templateTsHost);
+	const scriptTsLsRaw = ts.createLanguageService(scriptTsHost);
 	const templateTsLs = ts2.createLanguageService(ts, templateTsHost, templateTsLsRaw);
 	const scriptTsLs = ts2.createLanguageService(ts, scriptTsHost, scriptTsLsRaw);
 	const localTypesScript = ts.ScriptSnapshot.fromString(localTypes.getTypesCode(isVue2));
@@ -256,9 +256,9 @@ export function createLanguageService(
 		getCodeActions: publicApiHook(codeActions.register(context), false),
 		doCodeActionResolve: publicApiHook(codeActionResolve.register(context), false),
 		doCompletionResolve: publicApiHook(completionResolve.register(context), false),
-		doCodeLensResolve: publicApiHook(codeLensResolve.register(context), false),
+		doReferencesCodeLensResolve: publicApiHook(codeLensResolve.register(context), false),
 		getSignatureHelp: publicApiHook(signatureHelp.register(context), false),
-		getCodeLens: publicApiHook(codeLens.register(context), false),
+		getReferencesCodeLens: publicApiHook(codeLens.register(context), false),
 		findDocumentHighlights: publicApiHook(documentHighlight.register(context), false),
 		findDocumentLinks: publicApiHook(documentLink.register(context), false),
 		findWorkspaceSymbols: publicApiHook(workspaceSymbol.register(context), false),
@@ -297,7 +297,6 @@ export function createLanguageService(
 			},
 			getContext: publicApiHook(() => context),
 			getD3: publicApiHook(d3.register(context)),
-			executeCommand: publicApiHook(executeCommand.register(context), true, false),
 			detectTagNameCase: publicApiHook(tagNameCase.register(context)),
 			doRefAutoClose: publicApiHook(refAutoClose.register(context), false),
 		},
