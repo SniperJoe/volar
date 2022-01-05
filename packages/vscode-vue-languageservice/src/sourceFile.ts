@@ -17,6 +17,7 @@ import { useSfcTemplateCompileResult } from './use/useSfcTemplateCompileResult';
 import { useSfcTemplateScript } from './use/useSfcTemplateScript';
 import { SearchTexts } from './utils/string';
 import { untrack } from './utils/untrack';
+import 'vscode-languageserver-types';
 
 export interface SourceFile extends ReturnType<typeof createSourceFile> { }
 

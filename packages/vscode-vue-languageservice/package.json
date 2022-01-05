@@ -31,6 +31,7 @@
 		"vscode-json-languageservice": "^4.1.10",
 		"vscode-languageserver-protocol": "^3.17.0-next.11",
 		"vscode-languageserver-textdocument": "^1.0.3",
+		"vscode-languageserver-types": "^3.17.0-next.5",
 		"vscode-pug-languageservice": "0.30.2",
 		"vscode-typescript-languageservice": "0.30.2"
 	}
