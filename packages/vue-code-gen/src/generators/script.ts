@@ -1,4 +1,4 @@
-import { createCodeGen } from '@volar/code-gen';
+import { CodeGen } from '@volar/code-gen';
 import * as SourceMaps from '@volar/source-map';
 import { hyphenate } from '@vue/shared';
 import * as path from 'upath';
@@ -24,7 +24,7 @@ export function generate(
 	vueLibName: string,
 ) {
 
-	const codeGen = createCodeGen<TsMappingData>();
+	const codeGen = new CodeGen<TsMappingData>();
 	const teleports: SourceMaps.Mapping<TeleportMappingData>[] = [];
 	const usedTypes = {
 		DefinePropsToOptions: false,
@@ -103,7 +103,7 @@ export function generate(
 	}
 
 	return {
-		...codeGen,
+		codeGen,
 		teleports,
 	};
 
